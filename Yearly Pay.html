@@ -1,0 +1,2506 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Pilot Pay Dashboard</title>
+  <style>
+    :root{
+      --bg:#F6F7FB;
+      --card:#FFFFFF;
+      --border:#E6EAF0;
+      --text:#111827;
+      --muted:#64748B;
+      --muted2:#94A3B8;
+      --blue:#2563EB;
+      --green:#10B981;
+      --red:#EF4444;
+      --amber:#F59E0B;
+      --cyan:#06B6D4;
+      --shadow: 0 10px 24px rgba(15, 23, 42, .08);
+      --radius:14px;
+      --radiusSm:12px;
+      --tap:44px;
+    }
+    *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: -apple-system, BlinkMacSystemFont, "Avenir Next", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow:hidden;
+    }
+    button,input,textarea,select{ font-family:inherit; }
+    .app{
+      height:100%;
+      display:flex;
+      flex-direction:column;
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    header{
+      position:sticky;
+      top:0;
+      z-index:10;
+      background: var(--bg);
+      padding: 12px 12px 10px;
+      border-bottom: 1px solid rgba(230,234,240,.7);
+      backdrop-filter: blur(10px);
+    }
+    .toprow{
+      display:flex;
+      gap:8px;
+      align-items:center;
+    }
+    .btn{
+      height:var(--tap);
+      border-radius:var(--radiusSm);
+      border:1px solid var(--border);
+      background:#fff;
+      color:#111;
+      padding:0 12px;
+      font-weight:600;
+      font-size:14px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      user-select:none;
+    }
+    .btn:active{ transform: translateY(1px); }
+    .btn-primary{ background:var(--blue); color:#fff; border-color: transparent; }
+    .btn-danger{ background:var(--red); color:#fff; border-color: transparent; }
+    .btn-success{ background:var(--green); color:#fff; border-color: transparent; }
+    .btn-warn{ background:var(--amber); color:#fff; border-color: transparent; }
+    .btn-ghost{ background:#F8FAFC; }
+    .btn:disabled{
+      opacity:.45;
+      transform:none;
+      cursor:not-allowed;
+    }
+
+    .yearBtn{ flex: 1.25; justify-content:space-between; padding:0 12px; }
+    .btnCompact{ flex: .55; }
+    .segRow{
+      margin-top:10px;
+      display:grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap:8px;
+    }
+    .seg{
+      height:34px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background:#fff;
+      font-weight:700;
+      font-size:12px;
+      color:#0f172a;
+    }
+    .seg.active{
+      background:#111827;
+      color:#fff;
+      border-color:#111827;
+    }
+
+    main{
+      flex:1;
+      overflow:auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 12px;
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow: 0 2px 0 rgba(15,23,42,.02);
+    }
+    .card.pad{ padding:14px; }
+    .h1{
+      font-size:18px;
+      font-weight:800;
+      margin:0 0 10px;
+      letter-spacing:.2px;
+    }
+    .h2{
+      font-size:15px;
+      font-weight:800;
+      margin:0 0 8px;
+      letter-spacing:.2px;
+    }
+    .sub{
+      margin:0;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.25rem;
+    }
+    .row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .grid2{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:12px;
+    }
+    .grid2 .card{ overflow:hidden; }
+    @media (min-width: 720px){
+      main{ padding:16px 18px; }
+      header{ padding:16px 18px 12px; }
+      .grid2{ grid-template-columns: 1fr 1fr; }
+      .segRow{ grid-template-columns: repeat(5, 140px); justify-content:flex-start; }
+      .toprow{ max-width: 880px; margin:0 auto; }
+      .segRow{ max-width: 880px; margin:10px auto 0; }
+      main{ max-width: 880px; margin:0 auto; width:100%; }
+    }
+
+    .metrics{ margin-top:6px; }
+    .metric{
+      display:flex;
+      gap:10px;
+      justify-content:space-between;
+      padding:6px 0;
+      border-bottom:1px dashed rgba(148,163,184,.35);
+    }
+    .metric:last-child{ border-bottom:none; }
+    .metric .k{ color:var(--muted); font-size:12px; font-weight:700; }
+    .metric .v{ color:var(--text); font-size:13px; font-weight:800; }
+
+    .controls{
+      display:grid;
+      gap:10px;
+    }
+    .segSmall{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap:8px;
+    }
+    .segSmall2{
+      display:grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap:8px;
+    }
+    .pill{
+      height:36px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background:#fff;
+      font-weight:800;
+      font-size:12px;
+      color:#0f172a;
+    }
+    .pill.active{
+      background:#0f172a;
+      color:#fff;
+      border-color:#0f172a;
+    }
+
+    .switchRow{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding-top:6px;
+    }
+    .switch{
+      width:52px; height:32px;
+      border-radius:999px;
+      background:#E2E8F0;
+      position:relative;
+      border:1px solid var(--border);
+      flex:0 0 auto;
+      cursor:pointer;
+    }
+    .switch .knob{
+      position:absolute;
+      top:3px; left:3px;
+      width:26px; height:26px;
+      border-radius:999px;
+      background:#fff;
+      box-shadow: 0 8px 14px rgba(15,23,42,.14);
+      transition: all .18s ease;
+    }
+    .switch.on{ background: rgba(16,185,129,.25); border-color: rgba(16,185,129,.35); }
+    .switch.on .knob{ left:23px; }
+    .switchLabel{
+      font-size:12px;
+      color:#334155;
+      font-weight:800;
+    }
+
+    .chartCard{ padding: 12px; }
+    .chartTitle{
+      font-weight:900;
+      font-size:14px;
+      margin:0 0 8px;
+      letter-spacing:.2px;
+    }
+    canvas{ width:100%; height:auto; display:block; }
+
+    .monthList{ display:grid; gap:12px; }
+    .monthItem{
+      padding:12px;
+      border-radius:14px;
+      border:1px solid var(--border);
+      background:#fff;
+      display:grid;
+      gap:6px;
+    }
+    .monthTop{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .monthName{ font-weight:900; font-size:14px; }
+    .monthNote{ color:var(--muted); font-size:12px; line-height:1.2rem; }
+    .monthVals{ color:#334155; font-weight:700; font-size:12px; }
+    .tag{
+      font-size:12px;
+      padding:6px 10px;
+      border-radius:999px;
+      background:#F8FAFC;
+      border:1px solid var(--border);
+      color:#0f172a;
+      font-weight:900;
+      white-space:nowrap;
+    }
+
+    /* Modal */
+    .modalRoot{
+      position:fixed;
+      inset:0;
+      z-index:50;
+      display:none;
+      align-items:flex-end;
+      justify-content:center;
+      padding: 12px 12px calc(12px + env(safe-area-inset-bottom));
+      background: rgba(2,6,23,.45);
+    }
+    .modalRoot.show{ display:flex; }
+    .sheet{
+      width:100%;
+      max-width: 920px;
+      border-radius: 18px;
+      background: var(--bg);
+      border:1px solid rgba(255,255,255,.18);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      transform: translateY(10px);
+      animation: pop .16s ease-out forwards;
+    }
+    @keyframes pop { to { transform: translateY(0); } }
+    .sheetHeader{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding: 12px 12px 10px;
+      border-bottom: 1px solid rgba(230,234,240,.8);
+      background: rgba(246,247,251,.9);
+      backdrop-filter: blur(10px);
+    }
+    .sheetHeader .title{
+      font-weight:950;
+      letter-spacing:.2px;
+    }
+    .sheetBody{
+      padding:12px;
+      max-height: min(72vh, 720px);
+      overflow:auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .field{
+      display:grid;
+      gap:6px;
+      margin-bottom:12px;
+    }
+    .field label{
+      font-size:12px;
+      font-weight:800;
+      color:#334155;
+    }
+    .input, .textarea{
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:10px 12px;
+      font-size:16px;
+      outline:none;
+      background:#fff;
+    }
+    .textarea{ min-height: 80px; resize: vertical; }
+    .help{ color:var(--muted); font-size:12px; margin:0 0 10px; }
+    .actions{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:10px;
+      margin-top: 10px;
+    }
+    .actions.two{ grid-template-columns: 1fr 1fr; }
+
+    /* Toast */
+    .toastRoot{
+      position:fixed;
+      left:0; right:0;
+      bottom: calc(14px + env(safe-area-inset-bottom));
+      display:flex;
+      justify-content:center;
+      z-index:80;
+      pointer-events:none;
+    }
+    .toast{
+      pointer-events:none;
+      background:#0f172a;
+      color:#fff;
+      padding:10px 12px;
+      border-radius:999px;
+      font-weight:900;
+      font-size:12px;
+      box-shadow: 0 14px 30px rgba(2,6,23,.28);
+      opacity:0;
+      transform: translateY(8px);
+      transition: all .18s ease;
+    }
+    .toast.show{
+      opacity:1;
+      transform: translateY(0);
+    }
+
+    .tableLike{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size:12px;
+      color:#0f172a;
+      background:#F8FAFC;
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:10px 12px;
+      overflow:auto;
+      white-space:nowrap;
+    }
+
+    .mutedBox{
+      background:#F8FAFC;
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:10px 12px;
+      color:#475569;
+      font-size:12px;
+      line-height:1.25rem;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app" id="app">
+    <header>
+      <div class="toprow">
+        <button class="btn yearBtn" id="yearBtn" type="button">
+          <span id="yearBtnText">Year: —</span>
+          <span style="opacity:.7;">▼</span>
+        </button>
+        <button class="btn btn-primary btnCompact" id="addYearBtn" type="button">+Year</button>
+        <button class="btn btn-danger btnCompact" id="delYearBtn" type="button">Delete</button>
+      </div>
+      <div class="segRow" id="sectionSeg"></div>
+    </header>
+
+    <main id="content"></main>
+  </div>
+
+  <div class="modalRoot" id="modalRoot" aria-hidden="true"></div>
+  <div class="toastRoot"><div class="toast" id="toast"></div></div>
+
+<script>
+/* ============================
+   Pilot Pay Dashboard (Web)
+   Single-file, offline, no deps
+   ============================ */
+
+const APP_TITLE = "Pilot Pay Dashboard";
+const STORAGE_KEY = "pilot_pay_dashboard_data_web_v1";
+
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+const PREFILL = {
+  "2023": {
+    "meta": {
+      "contract_hourly_rate_avg": 110.08,
+      "block_hourly_rate": 244.18,
+      "effective_hourly_rate": 281.23,
+      "effective_daily_pay": 1750.38,
+      "work_to_pay_pct": 48.07,
+      "f9_seniority": 71.70,
+      "notes": "General Notes: Max credit line is not as effective as picking up on RSV"
+    },
+    "year_totals": {
+      "block_total": 634.84,
+      "pay_credit_total": 1320.54,
+      "per_diem_total": 4176.67,
+      "gross_total": 150836.20,
+      "days_off_total": 263,
+      "net_total": 96813.56,
+      "taxes_total": 36517.78,
+      "total_compensation": 175261.63,
+      "401k_dc_total": 22625.43
+    },
+    "allocation": {
+      "mode": "actual",
+      "total_income": 175261.63,
+      "net_pay": 96813.56,
+      "taxes": 36517.78,
+      "hsa": 1800.00,
+      "401k_dc": 25443.12,
+      "deductions_total": 19371.16,
+      "deductions_breakdown": {
+        "401k": 5055.36,
+        "health": 12438.60,
+        "union_dues": 1877.80
+      }
+    },
+    "months": [
+      {"month": "Jan/2023", "block": 42.4, "pay_credit": 82.01, "pay_rate": 90.00, "per_diem": 203.43, "gross_pay": 7584.33, "days_off": 25, "net_pay": 5259.43, "notes": "RSL"},
+      {"month": "Feb/2023", "block": 31.02, "pay_credit": 86.53, "pay_rate": 100.00, "per_diem": 261.32, "gross_pay": 8914.32, "days_off": 22, "net_pay": 5663.02, "notes": "RSL"},
+      {"month": "Mar/2023", "block": 42.44, "pay_credit": 106.3, "pay_rate": 100.00, "per_diem": 345.77, "gross_pay": 10975.77, "days_off": 21, "net_pay": 7347.20, "notes": "FDO Feb"},
+      {"month": "Apr/2023", "block": 68.47, "pay_credit": 138.33, "pay_rate": 100.00, "per_diem": 465.56, "gross_pay": 14505.56, "days_off": 25, "net_pay": 9286.82, "notes": "RSL"},
+      {"month": "May/2023", "block": 41.03, "pay_credit": 83.13, "pay_rate": 100.00, "per_diem": 242.88, "gross_pay": 8555.88, "days_off": 27, "net_pay": 5779.98, "notes": "RSL"},
+      {"month": "Jun/2023", "block": 37.0, "pay_credit": 75.0, "pay_rate": 118.47, "per_diem": 171.42, "gross_pay": 9056.87, "days_off": 24, "net_pay": 5989.26, "notes": "RSL"},
+      {"month": "Jul/2023", "block": 20.46, "pay_credit": 81.29, "pay_rate": 118.74, "per_diem": 195.73, "gross_pay": 9848.10, "days_off": 26, "net_pay": 6649.09, "notes": "RSL"},
+      {"month": "Aug/2023", "block": 98.08, "pay_credit": 114.1, "pay_rate": 118.74, "per_diem": 496.39, "gross_pay": 14044.62, "days_off": 16, "net_pay": 9119.45, "notes": "Line Max Credit July"},
+      {"month": "Sep/2023", "block": 62.03, "pay_credit": 153.07, "pay_rate": 118.74, "per_diem": 300.89, "gross_pay": 18476.42, "days_off": 18, "net_pay": 11255.72, "notes": "FDO Aug"},
+      {"month": "Oct/2023", "block": 72.23, "pay_credit": 146.43, "pay_rate": 118.74, "per_diem": 480.26, "gross_pay": 17875.90, "days_off": 16, "net_pay": 11067.09, "notes": "FDO Sep"},
+      {"month": "Nov/2023", "block": 78.41, "pay_credit": 116.13, "pay_rate": 118.74, "per_diem": 579.29, "gross_pay": 14369.29, "days_off": 22, "net_pay": 9300.00, "notes": "FDO Oct"},
+      {"month": "Dec/2023", "block": 41.22, "pay_credit": 138.15, "pay_rate": 118.74, "per_diem": 430.50, "gross_pay": 16834.43, "days_off": 21, "net_pay": 10096.54, "notes": "FDO Nov"}
+    ]
+  },
+  "2024": {
+    "meta": {
+      "contract_hourly_rate_avg": 155.66,
+      "block_hourly_rate": 465.60,
+      "effective_hourly_rate": 529.66,
+      "effective_daily_pay": 2177.24,
+      "work_to_pay_pct": 37.79,
+      "f9_seniority": 63.82,
+      "sick_days_remaining": 14.5,
+      "notes": "General Notes: Upgrade occurred in July; A month spent waiting for OE"
+    },
+    "year_totals": {
+      "block_total": 544.87,
+      "pay_credit_total": 1441.96,
+      "per_diem_total": 4875.41,
+      "gross_total": 218925.52,
+      "days_off_total": 249,
+      "net_total": 124627.00,
+      "taxes_total": 59811.77,
+      "total_compensation": 252560.94,
+      "401k_dc_total": 31835.42
+    },
+    "allocation": {
+      "mode": "actual",
+      "total_income": 252560.94,
+      "net_pay": 124627.00,
+      "taxes": 59811.77,
+      "hsa": 1800.00,
+      "401k_dc": 31835.42,
+      "deductions_total": 31910.76,
+      "deductions_breakdown": {
+        "401k": 19822.80,
+        "health": 8161.58,
+        "union_dues": 3926.38
+      }
+    },
+    "months": [
+      {"month": "Jan/2024", "block": 40.14, "pay_credit": 150.36, "pay_rate": 118.74, "per_diem": 456.68, "gross_pay": 18310.43, "days_off": 20, "net_pay": 10691.23, "notes": "Training DEC/Vacation Payout"},
+      {"month": "Feb/2024", "block": 55.09, "pay_credit": 137.25, "pay_rate": 118.74, "per_diem": 405.02, "gross_pay": 16702.99, "days_off": 21, "net_pay": 9391.60, "notes": "FDO January"},
+      {"month": "Mar/2024", "block": 40.01, "pay_credit": 108.05, "pay_rate": 118.74, "per_diem": 214.61, "gross_pay": 13044.47, "days_off": 22, "net_pay": 8077.36, "notes": "FDO February"},
+      {"month": "Apr/2024", "block": 65.53, "pay_credit": 161.13, "pay_rate": 118.74, "per_diem": 501.86, "gross_pay": 19634.44, "days_off": 19, "net_pay": 11055.85, "notes": "FDO March+Vacation"},
+      {"month": "May/2024", "block": 65.53, "pay_credit": 211.15, "pay_rate": 118.74, "per_diem": 461.96, "gross_pay": 25533.91, "days_off": 17, "net_pay": 13398.86, "notes": "FDO April+Vacation"},
+      {"month": "Jun/2024", "block": 24.05, "pay_credit": 75.00, "pay_rate": 127.55, "per_diem": 188.17, "gross_pay": 9754.42, "days_off": 27, "net_pay": 5770.33, "notes": "Mental Health Break"},
+      {"month": "Jul/2024", "block": 57.2, "pay_credit": 132.49, "pay_rate": 127.55, "per_diem": 330.95, "gross_pay": 17220.05, "days_off": 23, "net_pay": 10341.69, "notes": "FDO June"},
+      {"month": "Aug/2024", "block": 0.0, "pay_credit": 79.52, "pay_rate": 127.55, "per_diem": 1169.99, "gross_pay": 11342.77, "days_off": 15, "net_pay": 7159.03, "notes": "Upgrade July"},
+      {"month": "Sep/2024", "block": 24.35, "pay_credit": 75.0, "pay_rate": 222.88, "per_diem": 166.10, "gross_pay": 16882.10, "days_off": 25, "net_pay": 7949.09, "notes": "OE August"},
+      {"month": "Oct/2024", "block": 48.26, "pay_credit": 75.0, "pay_rate": 222.88, "per_diem": 252.12, "gross_pay": 16968.12, "days_off": 22, "net_pay": 9740.53, "notes": "No Pickups September"},
+      {"month": "Nov/2024", "block": 46.55, "pay_credit": 106.01, "pay_rate": 222.88, "per_diem": 307.23, "gross_pay": 23934.74, "days_off": 21, "net_pay": 13563.01, "notes": "Into Day Off / Huge Rig"},
+      {"month": "Dec/2024", "block": 77.16, "pay_credit": 131.0, "pay_rate": 222.88, "per_diem": 390.72, "gross_pay": 29581.00, "days_off": 17, "net_pay": 17497.42, "notes": "FDO November"}
+    ]
+  },
+  "2025": {
+    "meta": {
+      "contract_hourly_rate_avg": 225.53,
+      "block_hourly_rate": 525.99,
+      "effective_hourly_rate": 608.22,
+      "effective_daily_pay": 3221.76,
+      "work_to_pay_pct": 43.44,
+      "sick_days_remaining": 17.5,
+      "notes": "Notes: Increased 401K comp by 1% (10%→11%). Reduced flying May–July (COLA). Intentional slump late summer. SS tax maxed end Sep; 401K maxed mid Nov."
+    },
+    "year_totals": {
+      "block_total": 497.92,
+      "pay_credit_total": 1146.12,
+      "per_diem_total": 3342.42,
+      "gross_total": 261902.16,
+      "days_off_total": 271,
+      "net_total": 153892.68,
+      "taxes_total": 66964.35,
+      "total_compensation": 302845.31,
+      "401k_dc_total": 39143.15
+    },
+    "allocation": {
+      "mode": "predicted",
+      "total_income": 302845.31,
+      "net_pay": 153892.68,
+      "taxes": 66964.35,
+      "hsa": null,
+      "401k_dc": 39143.15,
+      "deductions_total": null,
+      "deductions_breakdown": {"401k": null, "health": null, "union_dues": null}
+    },
+    "months": [
+      {"month": "Jan/2025", "block": 46.45, "pay_credit": 109.08, "pay_rate": 222.88, "per_diem": 258.99, "gross_pay": 24570.65, "days_off": 25, "net_pay": 13470.76, "notes": "Long Call"},
+      {"month": "Feb/2025", "block": 52.34, "pay_credit": 75.0, "pay_rate": 222.88, "per_diem": 388.58, "gross_pay": 17102.90, "days_off": 19, "net_pay": 9902.74, "notes": "FDO"},
+      {"month": "Mar/2025", "block": 19.28, "pay_credit": 75.53, "pay_rate": 222.88, "per_diem": 186.49, "gross_pay": 17020.62, "days_off": 23, "net_pay": 9989.30, "notes": "Long Call/Vacation"},
+      {"month": "Apr/2025", "block": 35.52, "pay_credit": 75.0, "pay_rate": 222.88, "per_diem": 248.23, "gross_pay": 16954.23, "days_off": 25, "net_pay": 9774.38, "notes": "Long Call"},
+      {"month": "May/2025", "block": 61.5, "pay_credit": 127.44, "pay_rate": 222.88, "per_diem": 351.19, "gross_pay": 28755.02, "days_off": 20, "net_pay": 15341.55, "notes": "Long Call/Vacation"},
+      {"month": "Jun/2025", "block": 79.53, "pay_credit": 131.55, "pay_rate": 227.43, "per_diem": 594.33, "gross_pay": 30517.75, "days_off": 15, "net_pay": 16303.87, "notes": "Short Call C"},
+      {"month": "Jul/2025", "block": 29.08, "pay_credit": 101.13, "pay_rate": 227.43, "per_diem": 130.61, "gross_pay": 23130.61, "days_off": 25, "net_pay": 13338.66, "notes": "Short Call C"},
+      {"month": "Aug/2025", "block": 36.14, "pay_credit": 88.05, "pay_rate": 227.43, "per_diem": 404.69, "gross_pay": 18610.46, "days_off": 25, "net_pay": 10694.40, "notes": "Short Call APC"},
+      {"month": "Sep/2025", "block": 57.05, "pay_credit": 89.53, "pay_rate": 227.43, "per_diem": 354.91, "gross_pay": 20716.74, "days_off": 18, "net_pay": 12984.94, "notes": "Long Call"},
+      {"month": "Oct/2025", "block": 17.48, "pay_credit": 86.33, "pay_rate": 227.43, "per_diem": 110.11, "gross_pay": 19744.14, "days_off": 27, "net_pay": 12280.40, "notes": "Short Call D"},
+      {"month": "Nov/2025", "block": 15.34, "pay_credit": 80.0, "pay_rate": 227.43, "per_diem": 59.88, "gross_pay": 18254.28, "days_off": 27, "net_pay": 12280.77, "notes": "Short Call A"},
+      {"month": "Dec/2025", "block": 43.21, "pay_credit": 115.48, "pay_rate": 227.43, "per_diem": 258.48, "gross_pay": 26529.10, "days_off": 22, "net_pay": 17652.91, "notes": "FDO"}
+    ]
+  }
+};
+
+const PREFILL_KEYS = new Set(Object.keys(PREFILL));
+const SECTION_TITLES = ["Dash","Comp","Months","Alloc","Set"];
+const COLORS = ["#2563EB","#EF4444","#10B981","#A855F7","#F59E0B","#0EA5E9","#06B6D4"];
+
+function deepClone(x){ return JSON.parse(JSON.stringify(x)); }
+function yearInt(y){ const n = parseInt(String(y),10); return Number.isFinite(n) ? n : 0; }
+
+function safeFloat(x){
+  if(x === null || x === undefined) return null;
+  const v = Number(String(x).replaceAll(",","").replaceAll("$",""));
+  if(!Number.isFinite(v)) return null;
+  return v;
+}
+function fmtNum(x, digits=2){
+  const v = safeFloat(x);
+  if(v === null) return "—";
+  return v.toFixed(digits);
+}
+function fmtMoney(x){
+  const v = safeFloat(x);
+  if(v === null) return "—";
+  return v.toLocaleString(undefined,{style:"currency", currency:"USD"});
+}
+function fmtMoneyCompact(x){
+  const v0 = safeFloat(x);
+  if(v0 === null) return "—";
+  const sign = v0 < 0 ? "-" : "";
+  let v = Math.abs(v0);
+  if(v >= 1e9) return `${sign}$${(v/1e9).toFixed(2)}B`;
+  if(v >= 1e6) return `${sign}$${(v/1e6).toFixed(2)}M`;
+  if(v >= 1e3) return `${sign}$${(v/1e3).toFixed(1)}k`;
+  return `${sign}$${Math.round(v).toLocaleString()}`;
+}
+function clamp01(v){ return Math.max(0, Math.min(1, v)); }
+
+function toast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(toast._t);
+  toast._t = setTimeout(()=>t.classList.remove("show"), 1200);
+}
+
+function el(tag, attrs={}, children=[]){
+  const n = document.createElement(tag);
+  for(const [k,v] of Object.entries(attrs||{})){
+    if(k === "class") n.className = v;
+    else if(k === "text") n.textContent = v;
+    else if(k.startsWith("on") && typeof v === "function") n.addEventListener(k.slice(2), v);
+    else if(k === "html") n.innerHTML = v;
+    else n.setAttribute(k, v);
+  }
+  for(const c of (children||[])){
+    if(c === null || c === undefined) continue;
+    n.appendChild(typeof c === "string" ? document.createTextNode(c) : c);
+  }
+  return n;
+}
+
+function loadState(){
+  let raw = null;
+  try{ raw = localStorage.getItem(STORAGE_KEY); }catch(_){}
+  if(raw){
+    try{
+      const st = JSON.parse(raw) || {};
+      st.years = normalizeYearKeys(st.years || {});
+      if(Object.keys(st.years).length === 0) st.years = normalizeYearKeys(deepClone(PREFILL));
+      st.ui_prefs = st.ui_prefs || {};
+      applyDefaultPrefs(st.ui_prefs);
+      markUserAdded(st.years);
+      return st;
+    }catch(_){}
+  }
+  const st = {
+    years: normalizeYearKeys(deepClone(PREFILL)),
+    ui_prefs: {
+      selected_year: null,
+      chart_style_main: "bar",
+      chart_style_total: "pie",
+      compare_count: 3,
+      compare_years: [],
+      compare_month_metric: "block",
+      show_bar_values: false,
+      compare_show_values: false
+    }
+  };
+  applyDefaultPrefs(st.ui_prefs);
+  markUserAdded(st.years);
+  return st;
+}
+function saveState(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(App.state));
+  }catch(_){
+    toast("Couldn't save (storage blocked?)");
+  }
+}
+function normalizeYearKeys(obj){
+  const out = {};
+  for(const [k,v] of Object.entries(obj || {})) out[String(k)] = v;
+  return out;
+}
+function applyDefaultPrefs(p){
+  p.selected_year ??= null;
+  p.chart_style_main ??= "bar";
+  p.chart_style_total ??= "pie";
+  p.compare_count ??= 3;
+  p.compare_years ??= [];
+  p.compare_month_metric ??= "block";
+  p.show_bar_values ??= false;
+  p.compare_show_values ??= false;
+}
+function markUserAdded(years){
+  for(const [y,yd] of Object.entries(years || {})){
+    if(!PREFILL_KEYS.has(String(y))){
+      yd.meta = yd.meta || {};
+      yd.meta.user_added = true;
+    }
+  }
+}
+
+/* ======================
+   Allocation prediction
+   ====================== */
+function deriveAllocationRatios(state){
+  const years = state.years || {};
+  const sums = {net:0, tax:0, hsa:0, kdc:0, ded:0, total:0};
+  const dedParts = { "401k":0, "health":0, "union_dues":0 };
+  let partTotal = 0;
+
+  for(const yd of Object.values(years)){
+    const alloc = (yd.allocation || {});
+    if(alloc.mode !== "actual") continue;
+    const total = safeFloat(alloc.total_income);
+    if(!total || total <= 0) continue;
+
+    sums.total += total;
+    sums.net += safeFloat(alloc.net_pay) || 0;
+    sums.tax += safeFloat(alloc.taxes) || 0;
+    sums.hsa += safeFloat(alloc.hsa) || 0;
+    sums.kdc += safeFloat(alloc["401k_dc"]) || 0;
+    sums.ded += safeFloat(alloc.deductions_total) || 0;
+
+    const parts = alloc.deductions_breakdown || {};
+    const ok = ["401k","health","union_dues"].every(k => safeFloat(parts[k]) !== null);
+    if(ok){
+      const p401k = safeFloat(parts["401k"]) || 0;
+      const phealth = safeFloat(parts["health"]) || 0;
+      const punion = safeFloat(parts["union_dues"]) || 0;
+      dedParts["401k"] += p401k;
+      dedParts["health"] += phealth;
+      dedParts["union_dues"] += punion;
+      partTotal += (p401k + phealth + punion);
+    }
+  }
+
+  if(sums.total <= 0){
+    return {
+      net_rate:0.50, tax_rate:0.24, hsa_rate:0.007, kdc_rate:0.12, ded_rate:0.12,
+      ded_share:{ "401k":0.62, "health":0.26, "union_dues":0.12 }
+    };
+  }
+
+  const net_rate = clamp01(sums.net / sums.total);
+  const tax_rate = clamp01(sums.tax / sums.total);
+  const hsa_rate = clamp01(sums.hsa / sums.total);
+  const kdc_rate = clamp01(sums.kdc / sums.total);
+  const ded_rate = clamp01(sums.ded / sums.total);
+
+  let ded_share;
+  if(partTotal <= 0){
+    ded_share = { "401k":0.62, "health":0.26, "union_dues":0.12 };
+  }else{
+    ded_share = {
+      "401k": dedParts["401k"]/partTotal,
+      "health": dedParts["health"]/partTotal,
+      "union_dues": dedParts["union_dues"]/partTotal
+    };
+  }
+  return {net_rate, tax_rate, hsa_rate, kdc_rate, ded_rate, ded_share};
+}
+
+function predictedAllocationForYear(state, year){
+  const y = state.years[String(year)];
+  const alloc = y.allocation || {};
+  const totals = y.year_totals || {};
+  const ratios = deriveAllocationRatios(state);
+
+  let total_income =
+    safeFloat(alloc.total_income) ??
+    safeFloat(totals.total_compensation) ??
+    safeFloat(totals.gross_total) ??
+    1.0;
+
+  if(!total_income || total_income <= 0) total_income = 1.0;
+
+  let net = safeFloat(alloc.net_pay);
+  let tax = safeFloat(alloc.taxes);
+  let hsa = safeFloat(alloc.hsa);
+  let kdc = safeFloat(alloc["401k_dc"]);
+  let ded_total = safeFloat(alloc.deductions_total);
+
+  if(net === null) net = total_income * ratios.net_rate;
+  if(tax === null) tax = total_income * ratios.tax_rate;
+  if(hsa === null){
+    const guess = total_income * ratios.hsa_rate;
+    hsa = (guess >= 500) ? guess : 1800.0;
+  }
+  if(kdc === null) kdc = total_income * ratios.kdc_rate;
+  if(ded_total === null) ded_total = total_income * ratios.ded_rate;
+
+  const parts = alloc.deductions_breakdown || {};
+  let p401k = safeFloat(parts["401k"]);
+  let phealth = safeFloat(parts["health"]);
+  let punion = safeFloat(parts["union_dues"]);
+  if(p401k === null || phealth === null || punion === null){
+    const s = ratios.ded_share;
+    p401k = ded_total * s["401k"];
+    phealth = ded_total * s["health"];
+    punion = ded_total * s["union_dues"];
+  }
+
+  return {
+    total_income: round2(total_income),
+    net_pay: round2(net),
+    taxes: round2(tax),
+    hsa: round2(hsa),
+    "401k_dc": round2(kdc),
+    deductions_total: round2(ded_total),
+    deductions_breakdown: {
+      "401k": round2(p401k),
+      "health": round2(phealth),
+      "union_dues": round2(punion)
+    }
+  };
+}
+
+function round2(x){
+  const v = safeFloat(x);
+  if(v === null) return null;
+  return Math.round(v*100)/100;
+}
+
+/* ======================
+   Month band highlighting
+   ====================== */
+function avgOfKey(months, key){
+  const vals = (months || []).map(m => safeFloat(m[key])).filter(v => v !== null);
+  if(vals.length === 0) return null;
+  return vals.reduce((a,b)=>a+b,0) / vals.length;
+}
+function monthColorBand(months, key){
+  const avg = avgOfKey(months, key);
+  if(avg === null || avg <= 0) return null;
+  return { avg, hi: avg*1.10, lo: avg*0.90 };
+}
+
+/* ======================
+   Totals recompute
+   ====================== */
+function recalcYearTotals(state, year){
+  const yd = state.years[String(year)];
+  const months = yd.months || [];
+  const s = (key) => months.reduce((sum,m)=>sum + (safeFloat(m[key]) || 0), 0);
+
+  const totals = yd.year_totals || {};
+  totals.block_total = round2(s("block"));
+  totals.pay_credit_total = round2(s("pay_credit"));
+  totals.per_diem_total = round2(s("per_diem"));
+  totals.gross_total = round2(s("gross_pay"));
+  totals.net_total = round2(s("net_pay"));
+  totals.days_off_total = Math.round(s("days_off"));
+
+  if(totals.taxes_total === null || totals.taxes_total === undefined ||
+     totals["401k_dc_total"] === null || totals["401k_dc_total"] === undefined ||
+     totals.total_compensation === null || totals.total_compensation === undefined){
+    const pred = predictedAllocationForYear(state, year);
+    if(totals.taxes_total === null || totals.taxes_total === undefined) totals.taxes_total = pred.taxes;
+    if(totals["401k_dc_total"] === null || totals["401k_dc_total"] === undefined) totals["401k_dc_total"] = pred["401k_dc"];
+    if(totals.total_compensation === null || totals.total_compensation === undefined) totals.total_compensation = pred.total_income;
+  }
+
+  yd.year_totals = totals;
+  return totals;
+}
+
+/* ======================
+   Compare prefs normalize
+   ====================== */
+function normalizeComparePrefs(state){
+  const prefs = state.ui_prefs || (state.ui_prefs = {});
+  applyDefaultPrefs(prefs);
+  const yearsAll = Object.keys(state.years || {}).sort((a,b)=>yearInt(a)-yearInt(b));
+
+  let cnt = parseInt(prefs.compare_count,10);
+  if(!Number.isFinite(cnt)) cnt = 3;
+  cnt = Math.max(2, Math.min(5, cnt));
+  prefs.compare_count = cnt;
+
+  let chosen = (prefs.compare_years || []).map(String).filter(y => state.years[String(y)]);
+  const seen = new Set();
+  chosen = chosen.filter(y => (seen.has(y) ? false : (seen.add(y), true)));
+  if(chosen.length > cnt) chosen = chosen.slice(0,cnt);
+
+  for(let i=yearsAll.length-1; i>=0 && chosen.length < cnt; i--){
+    const y = yearsAll[i];
+    if(!chosen.includes(y)) chosen.push(y);
+  }
+
+  chosen = chosen.sort((a,b)=>yearInt(a)-yearInt(b)).slice(0,cnt);
+  prefs.compare_years = chosen;
+}
+
+/* ======================
+   Chart rendering (Canvas)
+   ====================== */
+function makeChartWidget(opts){
+  const wrap = el("div",{class:"card chartCard"});
+  const title = el("div",{class:"chartTitle", text: opts.title || ""});
+  const canvas = el("canvas",{});
+  wrap.appendChild(title);
+  wrap.appendChild(canvas);
+
+  const legend = el("div",{});
+  if(opts.style === "pie" || opts.style === "donut"){
+    legend.style.marginTop = "8px";
+    legend.style.display = "grid";
+    legend.style.gap = "6px";
+    const labs = opts.labels || [];
+    labs.forEach((lab,i)=>{
+      const row = el("div",{});
+      row.style.display="flex";
+      row.style.alignItems="center";
+      row.style.gap="8px";
+      const sw = el("div",{});
+      sw.style.width="10px";
+      sw.style.height="10px";
+      sw.style.borderRadius="3px";
+      sw.style.background = COLORS[i % COLORS.length];
+      const txt = el("div",{text: lab});
+      txt.style.fontSize="12px";
+      txt.style.fontWeight="800";
+      txt.style.color="#334155";
+      row.appendChild(sw);
+      row.appendChild(txt);
+      legend.appendChild(row);
+    });
+    wrap.appendChild(legend);
+  }
+
+  function draw(){ drawChart(canvas, opts); }
+  wrap._canvas = canvas;
+  wrap._draw = draw;
+  requestAnimationFrame(draw);
+  return wrap;
+}
+
+function drawChart(canvas, opts){
+  const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
+  const rect = canvas.getBoundingClientRect();
+  const w = Math.max(260, rect.width);
+  const h = opts.height || (opts.style === "pie" || opts.style === "donut" ? 260 : 290);
+
+  canvas.width = Math.floor(w * dpr);
+  canvas.height = Math.floor(h * dpr);
+  canvas.style.height = h + "px";
+
+  const ctx = canvas.getContext("2d");
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,w,h);
+
+  if(opts.style === "pie" || opts.style === "donut"){
+    drawPie(ctx, w, h, opts);
+    return;
+  }
+  drawXY(ctx, w, h, opts);
+}
+
+function drawXY(ctx, w, h, opts){
+  const data = Array.isArray(opts.data) ? opts.data : [];
+  if(data.length === 0) return;
+  const series = Array.isArray(data[0]) ? data : [data];
+  const n = Math.max(...series.map(s=>s.length), 0);
+  if(n <= 0) return;
+
+  const labels = (opts.labels || []).slice(0,n);
+  const showValues = !!opts.show_values;
+  const valueKind = opts.value_kind || "num";
+  const yAxisTitle = opts.y_axis_title || "";
+
+  const leftPad = 54;
+  const bottomPad = labels.length ? 46 : 28;
+  const topPad = 8;
+
+  const ax = {
+    x: leftPad,
+    y: topPad,
+    w: Math.max(10, w - leftPad - 10),
+    h: Math.max(10, h - bottomPad - topPad)
+  };
+
+  let mx = 0;
+  for(const s of series){
+    for(const v of s){
+      const fv = safeFloat(v);
+      if(fv !== null) mx = Math.max(mx, fv);
+    }
+  }
+  mx = (mx || 1) * 1.10;
+
+  const ticks = 5;
+  ctx.save();
+  ctx.strokeStyle = "#E9EDF2";
+  ctx.lineWidth = 1;
+  for(let i=0;i<ticks;i++){
+    const frac = i/(ticks-1);
+    const y = ax.y + ax.h * frac;
+    ctx.beginPath();
+    ctx.moveTo(ax.x, y);
+    ctx.lineTo(ax.x + ax.w, y);
+    ctx.stroke();
+
+    const val = mx * (1 - frac);
+    const lab = (valueKind === "money")
+      ? fmtMoneyCompact(val)
+      : (mx >= 100 ? Math.round(val).toString() : val.toFixed(2));
+
+    ctx.fillStyle = "#64748B";
+    ctx.font = "600 11px -apple-system, BlinkMacSystemFont, Avenir Next, Segoe UI, Roboto, Helvetica, Arial";
+    ctx.textAlign = "right";
+    ctx.textBaseline = "middle";
+    ctx.fillText(lab, leftPad - 8, y);
+  }
+
+  if(yAxisTitle){
+    ctx.fillStyle = "#94A3B8";
+    ctx.font = "800 11px -apple-system, BlinkMacSystemFont, Avenir Next, Segoe UI, Roboto, Helvetica, Arial";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
+    ctx.fillText(String(yAxisTitle), 8, ax.y - 2);
+  }
+  ctx.restore();
+
+  const mode = opts.style || "bar";
+  if(mode === "bar"){
+    const groupW = ax.w / Math.max(1, n);
+    const barW = groupW / (series.length + 1.4);
+    for(let si=0; si<series.length; si++){
+      const s = series[si];
+      const color = COLORS[si % COLORS.length];
+      for(let i=0;i<s.length;i++){
+        const fv = safeFloat(s[i]) || 0;
+        const x = ax.x + i*groupW + (si + 0.7)*barW;
+        const hBar = (fv/mx) * (ax.h - 18);
+        const y = ax.y + ax.h - hBar;
+
+        roundRect(ctx, x, y, Math.max(2, barW*0.85), hBar, 3);
+        ctx.fillStyle = color;
+        ctx.fill();
+
+        if(showValues){
+          const txt = (valueKind === "money") ? fmtMoneyCompact(fv) : fv.toFixed(2);
+          ctx.fillStyle = "#334155";
+          ctx.font = "800 11px -apple-system, BlinkMacSystemFont, Avenir Next, Segoe UI, Roboto, Helvetica, Arial";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "bottom";
+          ctx.fillText(txt, x + (barW*0.85)/2, y - 2);
+        }
+      }
+    }
+  } else {
+    for(let si=0; si<series.length; si++){
+      const s = series[si];
+      const color = COLORS[si % COLORS.length];
+      const pts = [];
+      for(let i=0;i<s.length;i++){
+        const fv = safeFloat(s[i]) || 0;
+        const x = ax.x + (i + 0.5)*(ax.w / n);
+        const hVal = (fv/mx) * (ax.h - 18);
+        const y = ax.y + ax.h - hVal;
+        pts.push({x,y,fv});
+      }
+      if(pts.length < 2) continue;
+
+      if(mode === "area"){
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(pts[0].x, ax.y + ax.h);
+        for(const p of pts) ctx.lineTo(p.x, p.y);
+        ctx.lineTo(pts[pts.length-1].x, ax.y + ax.h);
+        ctx.closePath();
+        ctx.fillStyle = hexToRgba(color, 0.14);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(pts[0].x, pts[0].y);
+      for(const p of pts.slice(1)) ctx.lineTo(p.x, p.y);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 3;
+      ctx.lineJoin = "round";
+      ctx.lineCap = "round";
+      ctx.stroke();
+      ctx.restore();
+
+      if(showValues){
+        ctx.save();
+        ctx.fillStyle = "#334155";
+        ctx.font = "800 10px -apple-system, BlinkMacSystemFont, Avenir Next, Segoe UI, Roboto, Helvetica, Arial";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "bottom";
+        for(const p of pts){
+          const txt = (valueKind === "money") ? fmtMoneyCompact(p.fv) : p.fv.toFixed(2);
+          ctx.fillText(txt, p.x, p.y - 3);
+        }
+        ctx.restore();
+      }
+    }
+  }
+
+  if(labels.length){
+    ctx.save();
+    ctx.fillStyle = "#64748B";
+    ctx.font = "800 11px -apple-system, BlinkMacSystemFont, Avenir Next, Segoe UI, Roboto, Helvetica, Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+    const y = ax.y + ax.h + 8;
+    for(let i=0;i<labels.length;i++){
+      const x = ax.x + (i + 0.5)*(ax.w / n);
+      ctx.fillText(String(labels[i] || ""), x, y);
+    }
+    ctx.restore();
+  }
+
+  if(opts.series_names && opts.series_names.length){
+    ctx.save();
+    let lx = ax.x;
+    const ly = h - 18;
+    ctx.font = "800 12px -apple-system, BlinkMacSystemFont, Avenir Next, Segoe UI, Roboto, Helvetica, Arial";
+    ctx.textBaseline = "middle";
+    for(let si=0; si<Math.min(6, opts.series_names.length); si++){
+      const name = opts.series_names[si];
+      const color = COLORS[si % COLORS.length];
+      ctx.fillStyle = color;
+      roundRect(ctx, lx, ly-5, 10, 10, 3);
+      ctx.fill();
+      ctx.fillStyle = "#334155";
+      ctx.textAlign = "left";
+      ctx.fillText(String(name), lx + 14, ly);
+      lx += 130;
+      if(lx > w - 120) break;
+    }
+    ctx.restore();
+  }
+}
+
+function drawPie(ctx, w, h, opts){
+  const raw = Array.isArray(opts.data) ? opts.data : [];
+  if(raw.length === 0) return;
+
+  const values = raw.map(v => Math.max(0, safeFloat(v) || 0));
+  const total = values.reduce((a,b)=>a+b,0);
+  if(total <= 0) return;
+
+  const donut = (opts.style === "donut");
+  const cx = w * 0.50;
+  const cy = h * 0.52;
+  const radius = Math.min(w * 0.30, h * 0.40);
+  let start = -Math.PI/2;
+
+  for(let i=0;i<values.length;i++){
+    const v = values[i];
+    if(v <= 0) continue;
+    const ang = (v/total) * 2*Math.PI;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, radius, start, start + ang);
+    ctx.closePath();
+    ctx.fillStyle = COLORS[i % COLORS.length];
+    ctx.fill();
+    start += ang;
+  }
+
+  if(donut){
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius*0.55, 0, 2*Math.PI);
+    ctx.closePath();
+    ctx.fillStyle = "#fff";
+    ctx.fill();
+  }
+
+  ctx.save();
+  ctx.fillStyle = "#111827";
+  ctx.font = "900 12px -apple-system, BlinkMacSystemFont, Avenir Next, Segoe UI, Roboto, Helvetica, Arial";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("Total", cx, cy - 8);
+  ctx.fillStyle = "#334155";
+  ctx.font = "950 14px -apple-system, BlinkMacSystemFont, Avenir Next, Segoe UI, Roboto, Helvetica, Arial";
+  ctx.fillText(fmtMoneyCompact(total), cx, cy + 10);
+  ctx.restore();
+}
+
+function roundRect(ctx, x, y, w, h, r){
+  const rr = Math.min(r, w/2, h/2);
+  ctx.beginPath();
+  ctx.moveTo(x+rr, y);
+  ctx.arcTo(x+w, y, x+w, y+h, rr);
+  ctx.arcTo(x+w, y+h, x, y+h, rr);
+  ctx.arcTo(x, y+h, x, y, rr);
+  ctx.arcTo(x, y, x+w, y, rr);
+  ctx.closePath();
+}
+function hexToRgba(hex, a){
+  const h = hex.replace("#","").trim();
+  const r = parseInt(h.slice(0,2),16);
+  const g = parseInt(h.slice(2,4),16);
+  const b = parseInt(h.slice(4,6),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+
+/* ======================
+   Modal helpers (AUTO-DISMISS)
+   ====================== */
+const modalRoot = document.getElementById("modalRoot");
+
+function closeModal(){
+  try{ document.activeElement && document.activeElement.blur && document.activeElement.blur(); }catch(_){}
+  modalRoot.classList.remove("show");
+  modalRoot.setAttribute("aria-hidden","true");
+  modalRoot.innerHTML = "";
+}
+function openSheet(titleText, bodyNode, {doneText="Done", onDone=null}={}){
+  modalRoot.innerHTML = "";
+  const sheet = el("div",{class:"sheet"});
+  const header = el("div",{class:"sheetHeader"},[
+    el("div",{class:"title", text:titleText}),
+    el("div",{style:"display:flex; gap:8px; align-items:center;"},[
+      el("button",{class:"btn btn-ghost", type:"button", text:doneText, onclick:()=>{
+        if(onDone) onDone();
+        closeModal();
+      }}),
+    ])
+  ]);
+  const body = el("div",{class:"sheetBody"},[bodyNode]);
+  sheet.appendChild(header);
+  sheet.appendChild(body);
+  modalRoot.appendChild(sheet);
+  modalRoot.classList.add("show");
+  modalRoot.setAttribute("aria-hidden","false");
+
+  modalRoot.onclick = (e)=>{
+    if(e.target === modalRoot) closeModal();
+  };
+}
+
+/* ======================
+   App
+   ====================== */
+const App = {
+  state: loadState(),
+  currentYear: null,
+  section: "Dash"
+};
+
+function ensureCurrentYear(){
+  const years = Object.keys(App.state.years || {}).sort((a,b)=>yearInt(a)-yearInt(b));
+  if(years.length === 0){
+    App.state.years = normalizeYearKeys(deepClone(PREFILL));
+  }
+  const prefs = App.state.ui_prefs || (App.state.ui_prefs = {});
+  applyDefaultPrefs(prefs);
+
+  const saved = String(prefs.selected_year || "").trim();
+  const fallback = years[years.length-1];
+  App.currentYear = (saved && App.state.years[saved]) ? saved : fallback;
+  prefs.selected_year = App.currentYear;
+}
+
+ensureCurrentYear();
+
+const yearBtn = document.getElementById("yearBtn");
+const yearBtnText = document.getElementById("yearBtnText");
+const addYearBtn = document.getElementById("addYearBtn");
+const delYearBtn = document.getElementById("delYearBtn");
+const sectionSeg = document.getElementById("sectionSeg");
+const content = document.getElementById("content");
+
+document.title = APP_TITLE;
+
+function onDataChanged(){
+  recalcYearTotals(App.state, App.currentYear);
+  saveState();
+  render();
+}
+
+function setYear(y){
+  const yy = String(y);
+  if(!App.state.years[yy]) return;
+  App.currentYear = yy;
+  App.state.ui_prefs.selected_year = yy;
+  saveState();
+  render();
+}
+
+function buildYearPicker(title, selected, onPick){
+  const years = Object.keys(App.state.years).sort((a,b)=>yearInt(a)-yearInt(b));
+  const body = el("div",{});
+  body.appendChild(el("p",{class:"help", text:"Tap a year to select. It will close immediately (no extra swipe / X)."}));
+
+  const list = el("div",{style:"display:grid; gap:8px;"});
+  years.forEach(y=>{
+    const isSel = String(y) === String(selected);
+    const b = el("button",{
+      class:"btn",
+      type:"button",
+      style:`justify-content:space-between; width:100%; height:48px; background:${isSel ? "#0f172a" : "#fff"}; color:${isSel ? "#fff" : "#111"}; border-color:${isSel ? "#0f172a" : "var(--border)"};`,
+      onclick:()=>{
+        onPick(y);
+        closeModal();
+      }
+    },[
+      el("span",{text:y}),
+      el("span",{text: isSel ? "✓" : ""})
+    ]);
+    list.appendChild(b);
+  });
+
+  body.appendChild(list);
+  openSheet(title, body, {doneText:"Done"});
+}
+
+function confirmDeleteYear(year, onConfirm){
+  const body = el("div",{});
+  const card = el("div",{class:"card pad"},[
+    el("div",{class:"h2", text:"Delete Year"}),
+    el("p",{class:"sub", text:`Are you sure you want to delete ${year} and all its data?`}),
+    el("div",{class:"actions"},[
+      el("button",{class:"btn btn-danger", type:"button", text:`Delete ${year}`, onclick:()=>{
+        onConfirm();
+        closeModal();
+      }}),
+      el("button",{class:"btn btn-ghost", type:"button", text:"Cancel", onclick:()=>closeModal()})
+    ])
+  ]);
+  body.appendChild(card);
+  openSheet("Confirm Delete", body, {doneText:"Done"});
+}
+
+function addYear(){
+  const years = Object.keys(App.state.years || {});
+  let maxY = new Date().getFullYear();
+  try{
+    maxY = Math.max(...years.map(y=>yearInt(y)).filter(n=>Number.isFinite(n)));
+    if(!Number.isFinite(maxY)) maxY = new Date().getFullYear();
+  }catch(_){}
+  const newYear = String(maxY + 1);
+  if(App.state.years[newYear]){
+    toast("Year already exists");
+    return;
+  }
+  const months = MONTHS.map(m => ({
+    month: `${m}/${newYear}`,
+    block: null, pay_credit: null, pay_rate: null,
+    per_diem: null, gross_pay: null, days_off: null,
+    net_pay: null, notes: ""
+  }));
+  App.state.years[newYear] = {
+    meta: { notes: "Predicted year - edit as you get actuals.", user_added: true },
+    year_totals: {},
+    allocation: {
+      mode: "predicted",
+      total_income: null, net_pay: null, taxes: null, hsa: null, "401k_dc": null,
+      deductions_total: null,
+      deductions_breakdown: { "401k": null, "health": null, "union_dues": null }
+    },
+    months
+  };
+  recalcYearTotals(App.state, newYear);
+  saveState();
+  setYear(newYear);
+  toast(`Added ${newYear}`);
+}
+
+function deleteCurrentYear(){
+  const y = String(App.currentYear);
+  if(PREFILL_KEYS.has(y)){
+    toast("Prefilled years can't be deleted");
+    return;
+  }
+  confirmDeleteYear(y, ()=>{
+    delete App.state.years[y];
+    const years = Object.keys(App.state.years).sort((a,b)=>yearInt(a)-yearInt(b));
+    const nextYear = years.length ? years[years.length-1] : null;
+    saveState();
+    if(nextYear) setYear(nextYear);
+    else{
+      App.state.years = normalizeYearKeys(deepClone(PREFILL));
+      ensureCurrentYear();
+      saveState();
+      render();
+    }
+    toast(`Deleted ${y}`);
+  });
+}
+
+yearBtn.addEventListener("click", ()=>{
+  buildYearPicker("Select Year", App.currentYear, (y)=>setYear(y));
+});
+addYearBtn.addEventListener("click", ()=>addYear());
+delYearBtn.addEventListener("click", ()=>deleteCurrentYear());
+
+function buildSectionSeg(){
+  sectionSeg.innerHTML = "";
+  SECTION_TITLES.forEach(name=>{
+    const b = el("button",{
+      class:"seg" + (App.section === name ? " active" : ""),
+      type:"button",
+      text:name,
+      onclick:()=>{
+        App.section = name;
+        render();
+      }
+    });
+    sectionSeg.appendChild(b);
+  });
+}
+
+function render(){
+  ensureCurrentYear();
+  buildSectionSeg();
+
+  const y = App.currentYear;
+  yearBtnText.textContent = `Year: ${y}`;
+  delYearBtn.disabled = PREFILL_KEYS.has(String(y));
+
+  content.innerHTML = "";
+  recalcYearTotals(App.state, y);
+
+  if(App.section === "Dash") content.appendChild(renderDashboard());
+  else if(App.section === "Comp") content.appendChild(renderCompare());
+  else if(App.section === "Months") content.appendChild(renderMonths());
+  else if(App.section === "Alloc") content.appendChild(renderAllocation());
+  else content.appendChild(renderSettings());
+}
+
+/* ======================
+   Sections
+   ====================== */
+function renderDashboard(){
+  const yd = App.state.years[App.currentYear];
+  const meta = yd.meta || {};
+  const totals = recalcYearTotals(App.state, App.currentYear);
+  const prefs = App.state.ui_prefs;
+
+  const root = el("div",{style:"display:grid; gap:12px;"});
+
+  const summary = el("div",{class:"card pad"},[
+    el("div",{class:"h1", text:`${App.currentYear} Summary`}),
+    el("div",{class:"metrics"},[
+      metricRow("Gross", fmtMoney(totals.gross_total)),
+      metricRow("Net", fmtMoney(totals.net_total)),
+      metricRow("Taxes", fmtMoney(totals.taxes_total)),
+      metricRow("401K DC", fmtMoney(totals["401k_dc_total"])),
+      metricRow("Block", fmtNum(totals.block_total, 2)),
+      metricRow("Credit", fmtNum(totals.pay_credit_total, 2))
+    ])
+  ]);
+
+  const chartControls = el("div",{class:"card pad"},[
+    el("div",{class:"h2", text:"Charts"}),
+    el("div",{class:"controls"},[
+      el("div",{class:"segSmall"},[
+        pill("bar", prefs.chart_style_main === "bar", ()=>{prefs.chart_style_main="bar"; saveState(); render();}),
+        pill("line", prefs.chart_style_main === "line", ()=>{prefs.chart_style_main="line"; saveState(); render();}),
+        pill("area", prefs.chart_style_main === "area", ()=>{prefs.chart_style_main="area"; saveState(); render();})
+      ]),
+      switchRow("Show values", !!prefs.show_bar_values, (val)=>{prefs.show_bar_values = val; saveState(); render();})
+    ])
+  ]);
+
+  const months = yd.months || [];
+  const blocks = months.map(m => safeFloat(m.block) || 0);
+  const credits = months.map(m => safeFloat(m.pay_credit) || 0);
+  const labs = months.map(m => String(m.month || "").slice(0,3));
+
+  const ch1 = makeChartWidget({
+    title:"Monthly Block to Credit",
+    style: prefs.chart_style_main,
+    data:[blocks, credits],
+    labels: labs,
+    series_names:["Block","Pay Credit"],
+    show_values: !!prefs.show_bar_values,
+    value_kind: "num",
+    y_axis_title: "Hours / Credit",
+    height: 300
+  });
+
+  const pieMode = prefs.chart_style_total || "pie";
+  const pieToggle = el("div",{class:"card pad"},[
+    el("div",{class:"h2", text:"Totals Chart"}),
+    el("div",{class:"segSmall2"},[
+      pill("pie", pieMode === "pie", ()=>{prefs.chart_style_total="pie"; saveState(); render();}),
+      pill("donut", pieMode === "donut", ()=>{prefs.chart_style_total="donut"; saveState(); render();})
+    ])
+  ]);
+
+  const ch2 = makeChartWidget({
+    title:"Total Block vs Total Credit",
+    style: pieMode,
+    data:[safeFloat(totals.block_total)||0, safeFloat(totals.pay_credit_total)||0],
+    labels:[`Block ${fmtNum(totals.block_total,2)}`, `Credit ${fmtNum(totals.pay_credit_total,2)}`],
+    height: 260
+  });
+
+  const notesCard = el("div",{class:"card pad"},[
+    el("div",{class:"h2", text:"Rates & Notes"}),
+    el("div",{style:"display:grid; gap:6px; marginTop:'6px';"},[
+      el("div",{class:"sub", text:`Contract Hourly (Avg): ${fmtMoney(meta.contract_hourly_rate_avg)}`}),
+      el("div",{class:"sub", text:`Block Hourly: ${fmtMoney(meta.block_hourly_rate)}`}),
+      el("div",{class:"sub", text:`Effective Hourly: ${fmtMoney(meta.effective_hourly_rate)}`}),
+      el("div",{class:"sub", text:`Effective Daily: ${fmtMoney(meta.effective_daily_pay)}`})
+    ]),
+    el("div",{class:"mutedBox", style:"margin-top:10px;"},[
+      el("div",{style:"font-weight:900; margin-bottom:6px;", text:"Notes"}),
+      el("div",{text: meta.notes || ""})
+    ])
+  ]);
+
+  root.appendChild(summary);
+  root.appendChild(chartControls);
+  root.appendChild(ch1);
+  root.appendChild(pieToggle);
+  root.appendChild(ch2);
+  root.appendChild(notesCard);
+
+  return root;
+}
+
+function renderCompare(){
+  normalizeComparePrefs(App.state);
+  const prefs = App.state.ui_prefs;
+  const years = Object.keys(App.state.years).sort((a,b)=>yearInt(a)-yearInt(b));
+  const cnt = Math.max(2, Math.min(5, parseInt(prefs.compare_count,10) || 3));
+
+  let chosen = (prefs.compare_years || []).filter(y => years.includes(y)).slice(0,cnt);
+  if(chosen.length < cnt){
+    const fill = years.slice().reverse().filter(y => !chosen.includes(y));
+    chosen = chosen.concat(fill.slice(0, cnt-chosen.length));
+  }
+  chosen = chosen.slice(0,cnt).sort((a,b)=>yearInt(a)-yearInt(b));
+  prefs.compare_years = chosen;
+
+  const root = el("div",{style:"display:grid; gap:12px;"});
+
+  const cfg = el("div",{class:"card pad"},[
+    el("div",{class:"h1", text:"Compare (2–5 Years)"}),
+    el("p",{class:"sub", text:"Each slot uses the in-app year picker and auto-closes after selection."}),
+    el("div",{style:"margin-top:10px;"} ,[
+      el("div",{class:"segSmall2", style:"grid-template-columns:repeat(4,1fr);"},[
+        pill("2", cnt===2, ()=>{prefs.compare_count=2; saveState(); render();}),
+        pill("3", cnt===3, ()=>{prefs.compare_count=3; saveState(); render();}),
+        pill("4", cnt===4, ()=>{prefs.compare_count=4; saveState(); render();}),
+        pill("5", cnt===5, ()=>{prefs.compare_count=5; saveState(); render();})
+      ])
+    ]),
+    el("div",{style:"display:grid; gap:8px; margin-top:10px;"},[
+      ...Array.from({length:cnt}).map((_,i)=>{
+        const row = el("div",{class:"row"},[
+          el("div",{class:"tag", text:`Y${i+1}`}),
+          el("button",{class:"btn btn-ghost", type:"button", style:"flex:1; height:40px; justify-content:space-between;",
+            text: chosen[i] || "—",
+            onclick: ()=>{
+              const selected = chosen[i] || years[years.length-1];
+              buildYearPicker(`Pick Year for Y${i+1}`, selected, (pickedYear)=>{
+                let cur = (prefs.compare_years || []).slice().filter(y => years.includes(y));
+                while(cur.length < cnt){
+                  const next = years.slice().reverse().find(y => !cur.includes(y));
+                  if(!next) break;
+                  cur.push(next);
+                }
+                cur = cur.slice(0,cnt);
+                cur[i] = String(pickedYear);
+                prefs.compare_years = cur;
+                normalizeComparePrefs(App.state);
+                saveState();
+                render();
+              });
+            }
+          })
+        ]);
+        return row;
+      }),
+      switchRow("Show values on compare charts", !!prefs.compare_show_values, (val)=>{
+        prefs.compare_show_values = val;
+        saveState();
+        render();
+      })
+    ])
+  ]);
+
+  root.appendChild(cfg);
+
+  const totalsCard = el("div",{class:"card pad"},[
+    el("div",{class:"h2", text:"Totals (Selected Years)"}),
+    el("div",{class:"tableLike", style:"margin-top:10px;"},[
+      el("div",{text:"Year     Total Comp      Net       Taxes      401K DC"})
+    ])
+  ]);
+  const table = totalsCard.querySelector(".tableLike");
+  chosen.forEach(yr=>{
+    const t = recalcYearTotals(App.state, yr);
+    table.appendChild(el("div",{text:`${yr}   ${fmtMoney(t.total_compensation)}   ${fmtMoney(t.net_total)}   ${fmtMoney(t.taxes_total)}   ${fmtMoney(t["401k_dc_total"])}`}));
+  });
+  root.appendChild(totalsCard);
+
+  const comp = chosen.map(yr => safeFloat(recalcYearTotals(App.state, yr).total_compensation) || 0);
+  const net = chosen.map(yr => safeFloat(recalcYearTotals(App.state, yr).net_total) || 0);
+  const tax = chosen.map(yr => safeFloat(recalcYearTotals(App.state, yr).taxes_total) || 0);
+  const kdc = chosen.map(yr => safeFloat(recalcYearTotals(App.state, yr)["401k_dc_total"]) || 0);
+
+  root.appendChild(makeChartWidget({
+    title:"Total Compensation Trend",
+    style:"line",
+    data:[comp],
+    labels: chosen,
+    series_names:["Total Comp"],
+    show_values: !!prefs.compare_show_values,
+    value_kind:"money",
+    y_axis_title:"USD",
+    height: 280
+  }));
+
+  root.appendChild(makeChartWidget({
+    title:"Net / Taxes / 401K Trend",
+    style:"line",
+    data:[net,tax,kdc],
+    labels: chosen,
+    series_names:["Net","Taxes","401K"],
+    show_values: !!prefs.compare_show_values,
+    value_kind:"money",
+    y_axis_title:"USD",
+    height: 280
+  }));
+
+  const metricMap = [
+    ["Block","block"],
+    ["Credit","pay_credit"],
+    ["Gross","gross_pay"],
+    ["Net","net_pay"]
+  ];
+  const metricKeys = metricMap.map(m=>m[1]);
+  let curMetric = prefs.compare_month_metric || "block";
+  if(!metricKeys.includes(curMetric)) curMetric = "block";
+  prefs.compare_month_metric = curMetric;
+
+  const metricCard = el("div",{class:"card pad"},[
+    el("div",{class:"h2", text:"Monthly Seasonality"}),
+    el("div",{class:"segSmall2", style:"grid-template-columns:repeat(4,1fr); margin-top:10px;"},[
+      ...metricMap.map(([lab,key]) => pill(lab, key===curMetric, ()=>{
+        prefs.compare_month_metric = key;
+        saveState();
+        render();
+      }))
+    ])
+  ]);
+  root.appendChild(metricCard);
+
+  const series = [];
+  const seriesNames = [];
+  chosen.forEach(yr=>{
+    const yd = App.state.years[yr] || {};
+    const ms = yd.months || [];
+    const valsBy = Object.fromEntries(MONTHS.map(m=>[m,0]));
+    for(const row of ms){
+      const label = String(row.month || "").slice(0,3);
+      if(valsBy.hasOwnProperty(label)) valsBy[label] = safeFloat(row[curMetric]) || 0;
+    }
+    series.push(MONTHS.map(m=>valsBy[m]));
+    seriesNames.push(yr);
+  });
+
+  const metricTitle = ({
+    block:"Block Hours",
+    pay_credit:"Pay Credit",
+    gross_pay:"Gross Pay",
+    net_pay:"Net Pay"
+  })[curMetric] || curMetric;
+
+  const isMoney = (curMetric === "gross_pay" || curMetric === "net_pay");
+
+  root.appendChild(makeChartWidget({
+    title:`Monthly Trend: ${metricTitle}`,
+    style:"line",
+    data: series,
+    labels: MONTHS,
+    series_names: seriesNames,
+    show_values: !!prefs.compare_show_values,
+    value_kind: isMoney ? "money" : "num",
+    y_axis_title: isMoney ? "USD" : "Hours",
+    height: 300
+  }));
+
+  return root;
+}
+
+function renderMonths(){
+  const yd = App.state.years[App.currentYear];
+  const rows = yd.months || [];
+  const bBlock = monthColorBand(rows, "block");
+  const bGross = monthColorBand(rows, "gross_pay");
+
+  const root = el("div",{style:"display:grid; gap:12px;"});
+
+  root.appendChild(el("div",{class:"h1", text:`${App.currentYear} Monthly Entries`}));
+
+  if(bBlock || bGross){
+    root.appendChild(el("div",{class:"sub", text:`Avg Block: ${bBlock ? fmtNum(bBlock.avg,2) : "—"}   •   Avg Gross: ${bGross ? fmtMoney(bGross.avg) : "—"}   (±10% highlighted)`}));
+  }
+
+  const list = el("div",{class:"monthList"});
+  rows.forEach((row)=>{
+    const note = String(row.notes || "").trim();
+    const vBlock = safeFloat(row.block);
+    const vGross = safeFloat(row.gross_pay);
+
+    let tint = "";
+    if(bBlock && vBlock !== null){
+      if(vBlock > bBlock.hi) tint = "background: rgba(16,185,129,.10);";
+      else if(vBlock < bBlock.lo) tint = "background: rgba(239,68,68,.08);";
+    }
+    if(!tint && bGross && vGross !== null){
+      if(vGross > bGross.hi) tint = "background: rgba(16,185,129,.10);";
+      else if(vGross < bGross.lo) tint = "background: rgba(239,68,68,.08);";
+    }
+
+    const item = el("div",{class:"monthItem", style:tint, onclick:()=>openMonthEditor(row)});
+    item.appendChild(el("div",{class:"monthTop"},[
+      el("div",{class:"monthName", text: row.month || "—"}),
+      el("div",{class:"tag", text: note ? "📝" : ""})
+    ]));
+    if(note) item.appendChild(el("div",{class:"monthNote", text: note}));
+
+    const b = fmtNum(row.block,2);
+    const c = fmtNum(row.pay_credit,2);
+    const g = fmtMoney(row.gross_pay);
+    const n = fmtMoney(row.net_pay);
+    item.appendChild(el("div",{class:"monthVals", text:`Block ${b} • Credit ${c}   |   Gross ${g} • Net ${n}`}));
+
+    list.appendChild(item);
+  });
+
+  root.appendChild(list);
+  return root;
+}
+
+function openMonthEditor(row){
+  const FIELDS = [
+    ["block", "Block", "num"],
+    ["pay_credit", "Pay Credit", "num"],
+    ["pay_rate", "Pay Rate", "money"],
+    ["per_diem", "Per Diem", "money"],
+    ["gross_pay", "Gross Pay", "money"],
+    ["days_off", "Days Off", "int"],
+    ["net_pay", "Net Pay", "money"],
+    ["notes", "Notes (RSL / FDO / Upgrade / etc.)", "text"]
+  ];
+  const body = el("div",{});
+  body.appendChild(el("p",{class:"help", text:"Tip: tap Save to apply and the editor will auto-close."}));
+
+  const inputs = {};
+  const card = el("div",{class:"card pad"});
+  FIELDS.forEach(([key,label,kind])=>{
+    const f = el("div",{class:"field"});
+    f.appendChild(el("label",{text:label}));
+    let inp;
+    if(kind === "text"){
+      inp = el("textarea",{class:"textarea", placeholder:"",});
+      inp.value = row[key] ?? "";
+    }else{
+      inp = el("input",{class:"input", type:"text", inputmode:(kind==="int"?"numeric":"decimal"), placeholder:""});
+      inp.value = (row[key] === null || row[key] === undefined) ? "" : String(row[key]);
+    }
+    inputs[key] = {inp, kind};
+    f.appendChild(inp);
+    card.appendChild(f);
+  });
+
+  const saveBtn = el("button",{class:"btn btn-success", type:"button", text:"Save Changes", onclick:()=>{
+    for(const [key,obj] of Object.entries(inputs)){
+      const kind = obj.kind;
+      const val = (obj.inp.value || "").trim();
+      if(kind === "text"){
+        row[key] = val;
+        continue;
+      }
+      if(val === ""){
+        row[key] = null;
+        continue;
+      }
+      const cleaned = val.replaceAll("$","").replaceAll(",","");
+      if(kind === "int"){
+        const n = safeFloat(cleaned);
+        row[key] = (n === null) ? row[key] : Math.trunc(n);
+      }else{
+        const n = safeFloat(cleaned);
+        row[key] = (n === null) ? row[key] : n;
+      }
+    }
+    onDataChanged();
+    closeModal();
+    toast("Saved");
+  }});
+
+  body.appendChild(card);
+  body.appendChild(el("div",{class:"actions"},[saveBtn]));
+
+  openSheet(row.month || "Edit Month", body, {doneText:"Done"});
+}
+
+function renderAllocation(){
+  const yd = App.state.years[App.currentYear];
+  const alloc = yd.allocation || (yd.allocation = {});
+  alloc.deductions_breakdown = alloc.deductions_breakdown || { "401k":null, "health":null, "union_dues":null };
+
+  const show = (alloc.mode === "actual") ? alloc : predictedAllocationForYear(App.state, App.currentYear);
+
+  const root = el("div",{style:"display:grid; gap:12px;"});
+
+  const top = el("div",{class:"card pad"},[
+    el("div",{class:"h1", text:`Allocation (${App.currentYear})`}),
+    el("div",{class:"sub", text:`Mode: ${(alloc.mode || "predicted").toUpperCase()}  •  Display Total: ${fmtMoney(show.total_income)}`}),
+    el("div",{style:"margin-top:10px; display:grid; gap:10px;"},[
+      el("button",{class:"btn btn-primary", type:"button", text:"Switch Actual/Predicted", onclick:()=>{
+        alloc.mode = (alloc.mode === "actual") ? "predicted" : "actual";
+        yd.allocation = alloc;
+        saveState();
+        render();
+      }})
+    ])
+  ]);
+  root.appendChild(top);
+
+  const values = [
+    safeFloat(show.net_pay) || 0,
+    safeFloat(show.taxes) || 0,
+    safeFloat(show["401k_dc"]) || 0,
+    safeFloat(show.hsa) || 0,
+    safeFloat(show.deductions_total) || 0
+  ];
+  const labels = [
+    `Net ${fmtMoney(values[0])}`,
+    `Taxes ${fmtMoney(values[1])}`,
+    `401K DC ${fmtMoney(values[2])}`,
+    `HSA ${fmtMoney(values[3])}`,
+    `Deductions ${fmtMoney(values[4])}`
+  ];
+
+  root.appendChild(makeChartWidget({
+    title:"Allocation",
+    style:"pie",
+    data: values,
+    labels,
+    height: 300
+  }));
+
+  const editBreakBtn = el("button",{class:"btn btn-success", type:"button", text:"Edit Deductions Breakdown →", onclick:()=>{
+    openDeductionsBreakdownEditor(alloc, ()=>{
+      yd.allocation = alloc;
+      alloc.mode = "actual";
+      onDataChanged();
+    });
+  }});
+  root.appendChild(editBreakBtn);
+
+  /* ✅ NEW: Deductions Breakdown Chart */
+  const parts = (show.deductions_breakdown || {});
+  const d401k = safeFloat(parts["401k"]) || 0;
+  const dhealth = safeFloat(parts["health"]) || 0;
+  const dunion = safeFloat(parts["union_dues"]) || 0;
+  const dtotal = d401k + dhealth + dunion;
+
+  if(dtotal > 0){
+    root.appendChild(makeChartWidget({
+      title:"Deductions Breakdown (401K / Health / Union)",
+      style:"donut",
+      data:[d401k, dhealth, dunion],
+      labels:[
+        `401K ${fmtMoney(d401k)}`,
+        `Health ${fmtMoney(dhealth)}`,
+        `Union Dues ${fmtMoney(dunion)}`
+      ],
+      height: 280
+    }));
+  }else{
+    root.appendChild(el("div",{class:"mutedBox", html:
+      `No deductions breakdown values yet.<br>
+       Tap <b>“Edit Deductions Breakdown”</b> to enter them (or switch to ACTUAL mode).`
+    }));
+  }
+
+  root.appendChild(renderAllocationEditorCard(yd, alloc, show));
+
+  return root;
+}
+
+function openDeductionsBreakdownEditor(alloc, onSave){
+  const parts = alloc.deductions_breakdown || (alloc.deductions_breakdown = {"401k":null,"health":null,"union_dues":null});
+  const body = el("div",{});
+  body.appendChild(el("p",{class:"help", text:"Save closes immediately. Values are treated as ACTUAL."}));
+
+  const card = el("div",{class:"card pad"});
+  const inputs = {};
+
+  [["401k","401K"],["health","Health"],["union_dues","Union Dues"]].forEach(([k,label])=>{
+    const f = el("div",{class:"field"});
+    f.appendChild(el("label",{text:label}));
+    const inp = el("input",{class:"input", type:"text", inputmode:"decimal", placeholder:""});
+    inp.value = (parts[k] === null || parts[k] === undefined) ? "" : String(parts[k]);
+    inputs[k] = inp;
+    f.appendChild(inp);
+    card.appendChild(f);
+  });
+
+  const saveBtn = el("button",{class:"btn btn-success", type:"button", text:"Save Breakdown", onclick:()=>{
+    for(const k of Object.keys(inputs)){
+      const txt = (inputs[k].value || "").trim().replaceAll("$","").replaceAll(",","");
+      parts[k] = (txt === "") ? null : (safeFloat(txt) ?? parts[k]);
+    }
+    const vals = ["401k","health","union_dues"].map(k => safeFloat(parts[k]));
+    if(vals.some(v => v !== null)){
+      alloc.deductions_total = round2((vals[0]||0)+(vals[1]||0)+(vals[2]||0));
+    }
+    alloc.mode = "actual";
+    alloc.deductions_breakdown = parts;
+    if(onSave) onSave();
+    closeModal();
+    toast("Saved breakdown");
+  }});
+
+  body.appendChild(card);
+  body.appendChild(el("div",{class:"actions"},[saveBtn]));
+  openSheet(`${App.currentYear} Deductions Breakdown`, body, {doneText:"Done"});
+}
+
+function renderAllocationEditorCard(yd, alloc, show){
+  const fields = [
+    ["total_income","Total Income"],
+    ["net_pay","Net Pay"],
+    ["taxes","Taxes"],
+    ["hsa","HSA"],
+    ["401k_dc","401K DC"],
+    ["deductions_total","Deductions Total"]
+  ];
+
+  const card = el("div",{class:"card pad"});
+  card.appendChild(el("div",{class:"h2", text:"Edit Allocation Figures (Saved as ACTUAL)"}));
+  card.appendChild(el("div",{class:"sub", text:"Tip: Save reads exactly what you typed."}));
+
+  const inputs = {};
+  fields.forEach(([key,label])=>{
+    const f = el("div",{class:"field"});
+    f.appendChild(el("label",{text:label}));
+    const inp = el("input",{class:"input", type:"text", inputmode:"decimal"});
+    let cur = safeFloat(alloc[key]);
+    if(cur === null) cur = safeFloat(show[key]);
+    inp.value = (cur === null) ? "" : String(cur);
+    inputs[key] = inp;
+    f.appendChild(inp);
+    card.appendChild(f);
+  });
+
+  const buttons = el("div",{class:"actions two"},[
+    el("button",{class:"btn btn-warn", type:"button", text:"Fill From Predicted", onclick:()=>{
+      const pred = predictedAllocationForYear(App.state, App.currentYear);
+      fields.forEach(([key])=>{
+        inputs[key].value = (pred[key] === null || pred[key] === undefined) ? "" : String(pred[key]);
+      });
+      toast("Filled from predicted");
+    }}),
+    el("button",{class:"btn btn-primary", type:"button", text:"Save Allocation", onclick:()=>{
+      fields.forEach(([key])=>{
+        const txt = (inputs[key].value || "").trim().replaceAll("$","").replaceAll(",","");
+        alloc[key] = (txt === "") ? null : (safeFloat(txt) ?? alloc[key]);
+      });
+
+      const parts = alloc.deductions_breakdown || {};
+      if(safeFloat(alloc.deductions_total) === null){
+        const pvals = ["401k","health","union_dues"].map(k => safeFloat(parts[k]));
+        if(pvals.some(v=>v!==null)){
+          alloc.deductions_total = round2((pvals[0]||0)+(pvals[1]||0)+(pvals[2]||0));
+        }
+      }
+
+      alloc.mode = "actual";
+      yd.allocation = alloc;
+
+      yd.year_totals = yd.year_totals || {};
+      if(safeFloat(alloc.taxes) !== null) yd.year_totals.taxes_total = round2(alloc.taxes);
+      if(safeFloat(alloc["401k_dc"]) !== null) yd.year_totals["401k_dc_total"] = round2(alloc["401k_dc"]);
+      if(safeFloat(alloc.total_income) !== null) yd.year_totals.total_compensation = round2(alloc.total_income);
+
+      onDataChanged();
+      toast("Allocation saved");
+    }})
+  ]);
+
+  card.appendChild(buttons);
+  return card;
+}
+
+function renderSettings(){
+  const root = el("div",{style:"display:grid; gap:12px;"});
+
+  const info = el("div",{class:"card pad"},[
+    el("div",{class:"h1", text:"Settings & Export"}),
+    el("div",{class:"mutedBox", html:
+      `Input tips:<br>
+      • Tap outside inputs (or Done) to dismiss the keyboard.<br>
+      • Editors auto-close after Save / selection.<br><br>
+      Data storage:<br>
+      • Autosave: <b>localStorage</b> (key: <code>${STORAGE_KEY}</code>)<br>`
+    })
+  ]);
+
+  const exportCard = el("div",{class:"card pad"},[
+    el("div",{class:"h2", text:"Export / Import"}),
+    el("div",{class:"actions"},[
+      el("button",{class:"btn btn-primary", type:"button", text:"Export JSON", onclick:()=>exportJSON()}),
+      el("button",{class:"btn btn-success", type:"button", text:"Export Excel (.xls) Tables", onclick:()=>exportExcelHTML()}),
+      el("button",{class:"btn btn-warn", type:"button", text:"Export Report (HTML + Charts)", onclick:()=>exportReportHTML()}),
+      buildImportButton()
+    ])
+  ]);
+
+  const danger = el("div",{class:"card pad"},[
+    el("div",{class:"h2", text:"Danger Zone"}),
+    el("p",{class:"sub", text:"Reset overwrites saved data and restores the embedded prefill."}),
+    el("div",{class:"actions"},[
+      el("button",{class:"btn btn-danger", type:"button", text:"Reset to Prefill", onclick:()=>confirmReset()})
+    ])
+  ]);
+
+  root.appendChild(info);
+  root.appendChild(exportCard);
+  root.appendChild(danger);
+  return root;
+}
+
+function buildImportButton(){
+  const wrap = el("div",{style:"display:grid; gap:8px;"});
+  const btn = el("button",{class:"btn btn-ghost", type:"button", text:"Import JSON (merge/replace)", onclick:()=>file.click()});
+  const file = el("input",{type:"file", accept:"application/json,.json", style:"display:none;"});
+  file.addEventListener("change", async ()=>{
+    const f = file.files && file.files[0];
+    if(!f) return;
+    try{
+      const txt = await f.text();
+      const obj = JSON.parse(txt);
+      if(!obj || typeof obj !== "object") throw new Error("Bad JSON");
+      if(obj.years && obj.ui_prefs){
+        App.state = {
+          years: normalizeYearKeys(obj.years),
+          ui_prefs: obj.ui_prefs || {}
+        };
+        applyDefaultPrefs(App.state.ui_prefs);
+        markUserAdded(App.state.years);
+      }else if(obj.years){
+        App.state.years = normalizeYearKeys(obj.years);
+        App.state.ui_prefs = App.state.ui_prefs || {};
+        applyDefaultPrefs(App.state.ui_prefs);
+        markUserAdded(App.state.years);
+      }else{
+        throw new Error("JSON doesn't look like a Pilot Pay Dashboard export");
+      }
+      ensureCurrentYear();
+      saveState();
+      render();
+      toast("Imported");
+    }catch(e){
+      toast("Import failed");
+      console.error(e);
+    }finally{
+      file.value = "";
+    }
+  });
+  wrap.appendChild(btn);
+  wrap.appendChild(file);
+  return wrap;
+}
+
+/* ✅ UPDATED: Two-step reset confirmation (warns again) */
+function confirmReset(){
+  const body = el("div",{});
+  const card = el("div",{class:"card pad"},[
+    el("div",{class:"h2", text:"Reset to Prefill (Step 1)"}),
+    el("p",{class:"sub", text:"This will ERASE your saved data (including added years and edits) and restore the embedded prefill."}),
+    el("div",{class:"mutedBox", style:"margin-top:10px;" , html:
+      `You are about to overwrite <b>everything</b> stored in localStorage for this dashboard.<br>
+       If you want a backup first, export JSON from the Export section.`
+    }),
+    el("div",{class:"actions"},[
+      el("button",{class:"btn btn-danger", type:"button", text:"Continue to Final Warning", onclick:()=>{
+        confirmResetFinal();
+      }}),
+      el("button",{class:"btn btn-ghost", type:"button", text:"Cancel", onclick:()=>closeModal()})
+    ])
+  ]);
+  body.appendChild(card);
+  openSheet("Reset", body, {doneText:"Done"});
+}
+
+function confirmResetFinal(){
+  const body = el("div",{});
+  const card = el("div",{class:"card pad"},[
+    el("div",{class:"h2", text:"Final Warning (Step 2)"}),
+    el("p",{class:"sub", text:"Last chance: This action cannot be undone. It will permanently erase your saved dashboard data on this device."}),
+    el("div",{class:"actions"},[
+      el("button",{class:"btn btn-danger", type:"button", text:"Erase Data & Restore Prefill", onclick:()=>{
+        App.state = {
+          years: normalizeYearKeys(deepClone(PREFILL)),
+          ui_prefs: {
+            selected_year: null,
+            chart_style_main: "bar",
+            chart_style_total: "pie",
+            compare_count: 3,
+            compare_years: [],
+            compare_month_metric: "block",
+            show_bar_values: false,
+            compare_show_values: false
+          }
+        };
+        ensureCurrentYear();
+        saveState();
+        closeModal();
+        render();
+        toast("Reset complete");
+      }}),
+      el("button",{class:"btn btn-ghost", type:"button", text:"Cancel", onclick:()=>closeModal()})
+    ])
+  ]);
+  body.appendChild(card);
+  openSheet("Reset (Final)", body, {doneText:"Done"});
+}
+
+/* ======================
+   Exporters
+   ====================== */
+function download(filename, mime, content){
+  const blob = new Blob([content], {type: mime});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 1500);
+}
+
+function exportJSON(){
+  for(const y of Object.keys(App.state.years)) recalcYearTotals(App.state, y);
+  saveState();
+  download(`pilot_pay_dashboard_export_${stamp()}.json`, "application/json", JSON.stringify(App.state, null, 2));
+  toast("Exported JSON");
+}
+
+function exportExcelHTML(){
+  const years = Object.keys(App.state.years).sort((a,b)=>yearInt(a)-yearInt(b));
+  years.forEach(y=>recalcYearTotals(App.state,y));
+
+  const summaryRows = years.map(y=>{
+    const t = App.state.years[y].year_totals || {};
+    return [
+      y,
+      safeFloat(t.gross_total) || 0,
+      safeFloat(t.net_total) || 0,
+      safeFloat(t.taxes_total) || 0,
+      safeFloat(t["401k_dc_total"]) || 0,
+      safeFloat(t.block_total) || 0,
+      safeFloat(t.pay_credit_total) || 0
+    ];
+  });
+
+  const sheetDefs = [
+    { name:"Summary", id:"summary", html: excelTableHTML(
+      ["Year","Gross","Net","Taxes","401K DC","Block","Credit"],
+      summaryRows
+    )}
+  ];
+
+  for(const y of years){
+    const yd = App.state.years[y];
+    const months = (yd.months || []).map(m=>[
+      m.month || "",
+      safeFloat(m.block) || 0,
+      safeFloat(m.pay_credit) || 0,
+      safeFloat(m.pay_rate) || 0,
+      safeFloat(m.per_diem) || 0,
+      safeFloat(m.gross_pay) || 0,
+      Math.trunc(safeFloat(m.days_off) || 0),
+      safeFloat(m.net_pay) || 0,
+      (m.notes || "")
+    ]);
+    sheetDefs.push({
+      name: y,
+      id: `y${y}`,
+      html: `
+        <h2>${y}</h2>
+        ${excelTableHTML(["Month","Block","Credit","Pay Rate","Per Diem","Gross","Days Off","Net","Notes"], months)}
+      `
+    });
+  }
+
+  const workbookXml = sheetDefs.map(s=>`
+    <x:ExcelWorksheet>
+      <x:Name>${escapeXml(s.name)}</x:Name>
+      <x:WorksheetSource HRef="#${escapeXml(s.id)}"/>
+    </x:ExcelWorksheet>
+  `).join("");
+
+  const html = `
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:x="urn:schemas-microsoft-com:office:excel"
+      xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+<meta charset="utf-8" />
+<!--[if gte mso 9]><xml>
+  <x:ExcelWorkbook>
+    <x:ExcelWorksheets>
+      ${workbookXml}
+    </x:ExcelWorksheets>
+  </x:ExcelWorkbook>
+</xml><![endif]-->
+<style>
+  body{font-family:Calibri, Arial; font-size:11pt;}
+  table{border-collapse:collapse;}
+  th,td{border:1px solid #D9D9D9; padding:6px 8px;}
+  th{background:#F2F2F2; font-weight:bold;}
+</style>
+</head>
+<body>
+  <h1>Pilot Pay Dashboard Export</h1>
+  <div><b>Exported:</b> ${new Date().toLocaleString()}</div>
+  <div style="margin:10px 0; color:#666;">
+    Note: This .xls export includes tables. For guaranteed charts, use “Export Report (HTML + Charts)”.
+  </div>
+  ${sheetDefs.map(s=>`<div id="${s.id}">${s.html}</div>`).join("\n<hr/>\n")}
+</body>
+</html>`.trim();
+
+  download(`pilot_pay_export_${stamp()}.xls`, "application/vnd.ms-excel", html);
+  toast("Exported Excel");
+}
+
+function exportReportHTML(){
+  const years = Object.keys(App.state.years).sort((a,b)=>yearInt(a)-yearInt(b));
+  years.forEach(y=>recalcYearTotals(App.state,y));
+
+  const charts = [];
+
+  const gross = years.map(y=>safeFloat(App.state.years[y].year_totals?.gross_total)||0);
+  const net = years.map(y=>safeFloat(App.state.years[y].year_totals?.net_total)||0);
+  const taxes = years.map(y=>safeFloat(App.state.years[y].year_totals?.taxes_total)||0);
+  const kdc = years.map(y=>safeFloat(App.state.years[y].year_totals?.["401k_dc_total"])||0);
+
+  charts.push({
+    title:"Gross vs Net (by Year)",
+    img: renderChartToDataURL({
+      style:"bar",
+      data:[gross, net],
+      labels: years,
+      series_names:["Gross","Net"],
+      show_values:false,
+      value_kind:"money",
+      y_axis_title:"USD",
+      height: 320
+    })
+  });
+  charts.push({
+    title:"Taxes + 401K DC (by Year)",
+    img: renderChartToDataURL({
+      style:"line",
+      data:[taxes, kdc],
+      labels: years,
+      series_names:["Taxes","401K DC"],
+      show_values:false,
+      value_kind:"money",
+      y_axis_title:"USD",
+      height: 320
+    })
+  });
+
+  const perYear = years.map(y=>{
+    const yd = App.state.years[y];
+    const ms = yd.months || [];
+    const blocks = ms.map(m=>safeFloat(m.block)||0);
+    const credits = ms.map(m=>safeFloat(m.pay_credit)||0);
+    const labs = ms.map(m=>String(m.month||"").slice(0,3));
+    const grossM = ms.map(m=>safeFloat(m.gross_pay)||0);
+    const netM = ms.map(m=>safeFloat(m.net_pay)||0);
+
+    const alloc = yd.allocation || {};
+    const show = (alloc.mode==="actual") ? alloc : predictedAllocationForYear(App.state, y);
+    const allocVals = [
+      safeFloat(show.net_pay)||0,
+      safeFloat(show.taxes)||0,
+      safeFloat(show["401k_dc"])||0,
+      safeFloat(show.hsa)||0,
+      safeFloat(show.deductions_total)||0
+    ];
+    const allocLabels = ["Net","Taxes","401K DC","HSA","Deductions"].map((k,i)=>`${k} ${fmtMoney(allocVals[i])}`);
+
+    return {
+      year: y,
+      charts: [
+        { title:`${y} Monthly Block & Credit`, img: renderChartToDataURL({
+          style:"bar",
+          data:[blocks, credits],
+          labels: labs,
+          series_names:["Block","Credit"],
+          show_values:false,
+          value_kind:"num",
+          y_axis_title:"Hours / Credit",
+          height: 320
+        })},
+        { title:`${y} Monthly Gross & Net`, img: renderChartToDataURL({
+          style:"line",
+          data:[grossM, netM],
+          labels: labs,
+          series_names:["Gross","Net"],
+          show_values:false,
+          value_kind:"money",
+          y_axis_title:"USD",
+          height: 320
+        })},
+        { title:`${y} Allocation`, img: renderChartToDataURL({
+          style:"donut",
+          data: allocVals,
+          labels: allocLabels,
+          height: 320
+        })}
+      ]
+    };
+  });
+
+  const summaryRows = years.map(y=>{
+    const t = App.state.years[y].year_totals || {};
+    return `
+      <tr>
+        <td>${escapeHtml(y)}</td>
+        <td>${escapeHtml(fmtMoney(t.gross_total))}</td>
+        <td>${escapeHtml(fmtMoney(t.net_total))}</td>
+        <td>${escapeHtml(fmtMoney(t.taxes_total))}</td>
+        <td>${escapeHtml(fmtMoney(t["401k_dc_total"]))}</td>
+        <td>${escapeHtml(fmtNum(t.block_total,2))}</td>
+        <td>${escapeHtml(fmtNum(t.pay_credit_total,2))}</td>
+      </tr>
+    `;
+  }).join("");
+
+  const yearSections = years.map(y=>{
+    const yd = App.state.years[y];
+    const ms = yd.months || [];
+    const rows = ms.map(m=>`
+      <tr>
+        <td>${escapeHtml(m.month||"")}</td>
+        <td>${escapeHtml(fmtNum(m.block,2))}</td>
+        <td>${escapeHtml(fmtNum(m.pay_credit,2))}</td>
+        <td>${escapeHtml(fmtMoney(m.pay_rate))}</td>
+        <td>${escapeHtml(fmtMoney(m.per_diem))}</td>
+        <td>${escapeHtml(fmtMoney(m.gross_pay))}</td>
+        <td>${escapeHtml(String(m.days_off ?? "—"))}</td>
+        <td>${escapeHtml(fmtMoney(m.net_pay))}</td>
+        <td>${escapeHtml(m.notes||"")}</td>
+      </tr>
+    `).join("");
+    const chartsHtml = (perYear.find(p=>p.year===y)?.charts || []).map(ch=>`
+      <h3 style="margin:14px 0 8px;">${escapeHtml(ch.title)}</h3>
+      <img src="${ch.img}" style="width:100%;max-width:920px;border:1px solid #E6EAF0;border-radius:14px;display:block;" />
+    `).join("");
+    return `
+      <hr style="margin:22px 0;border:none;border-top:1px solid #E6EAF0;" />
+      <h2>${escapeHtml(y)}</h2>
+      ${chartsHtml}
+      <h3 style="margin:16px 0 8px;">Monthly Table</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Month</th><th>Block</th><th>Credit</th><th>Pay Rate</th><th>Per Diem</th><th>Gross</th><th>Days Off</th><th>Net</th><th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    `;
+  }).join("");
+
+  const html = `
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pilot Pay Dashboard Report</title>
+  <style>
+    body{font-family:-apple-system,BlinkMacSystemFont,"Avenir Next","Segoe UI",Roboto,Helvetica,Arial,sans-serif; background:#F6F7FB; color:#111; margin:0; padding:18px;}
+    h1,h2,h3{margin:0 0 8px;}
+    p{color:#475569; margin:8px 0 14px; line-height:1.4;}
+    .card{background:#fff;border:1px solid #E6EAF0;border-radius:14px;padding:14px;margin:12px 0;}
+    table{border-collapse:collapse; width:100%; background:#fff; border:1px solid #E6EAF0; border-radius:14px; overflow:hidden;}
+    th,td{border-bottom:1px solid #E6EAF0; padding:8px 10px; font-size:12px; text-align:left; vertical-align:top;}
+    th{background:#F8FAFC; font-weight:900;}
+    img{margin-bottom:10px;}
+    @media (min-width: 900px){ body{max-width: 980px; margin:0 auto;} }
+  </style>
+</head>
+<body>
+  <h1>Pilot Pay Dashboard Report</h1>
+  <p><b>Exported:</b> ${escapeHtml(new Date().toLocaleString())}</p>
+
+  <div class="card">
+    <h2>Summary</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Year</th><th>Gross</th><th>Net</th><th>Taxes</th><th>401K DC</th><th>Block</th><th>Credit</th>
+        </tr>
+      </thead>
+      <tbody>${summaryRows}</tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    ${charts.map(ch=>`
+      <h3 style="margin:14px 0 8px;">${escapeHtml(ch.title)}</h3>
+      <img src="${ch.img}" style="width:100%;max-width:920px;border:1px solid #E6EAF0;border-radius:14px;display:block;" />
+    `).join("")}
+  </div>
+
+  ${yearSections}
+</body>
+</html>`.trim();
+
+  download(`pilot_pay_report_${stamp()}.html`, "text/html", html);
+  toast("Exported report");
+}
+
+function renderChartToDataURL(opts){
+  const canvas = document.createElement("canvas");
+  canvas.style.width = "920px";
+  canvas.getBoundingClientRect = ()=>({ width: 920, height: opts.height || 320 });
+  drawChart(canvas, opts);
+  return canvas.toDataURL("image/png");
+}
+
+function excelTableHTML(headers, rows){
+  const head = `<tr>${headers.map(h=>`<th>${escapeHtml(String(h))}</th>`).join("")}</tr>`;
+  const body = rows.map(r=>`<tr>${r.map(v=>`<td>${escapeHtml(String(v))}</td>`).join("")}</tr>`).join("");
+  return `<table><thead>${head}</thead><tbody>${body}</tbody></table>`;
+}
+
+function escapeHtml(s){
+  return String(s)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#39;");
+}
+function escapeXml(s){ return escapeHtml(s); }
+
+function stamp(){
+  const d = new Date();
+  const pad = (n)=>String(n).padStart(2,"0");
+  return `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}`;
+}
+
+/* ======================
+   Small UI helpers
+   ====================== */
+function metricRow(k,v){
+  return el("div",{class:"metric"},[
+    el("div",{class:"k", text:k}),
+    el("div",{class:"v", text:v})
+  ]);
+}
+function pill(text, active, onClick){
+  return el("button",{
+    class:"pill"+(active?" active":""),
+    type:"button",
+    text,
+    onclick:onClick
+  });
+}
+function switchRow(label, initial, onToggle){
+  const sw = el("div",{class:"switch"+(initial?" on":"")});
+  const knob = el("div",{class:"knob"});
+  sw.appendChild(knob);
+
+  const row = el("div",{class:"switchRow"});
+  row.appendChild(sw);
+  row.appendChild(el("div",{class:"switchLabel", text:label}));
+
+  const set = (val)=>{
+    sw.classList.toggle("on", !!val);
+    if(onToggle) onToggle(!!val);
+  };
+
+  sw.addEventListener("click", ()=>{
+    const now = sw.classList.contains("on");
+    set(!now);
+  });
+
+  return row;
+}
+
+/* ======================
+   Boot
+   ====================== */
+render();
+
+window.addEventListener("keydown", (e)=>{
+  if(e.key === "Escape") closeModal();
+});
+
+document.addEventListener("touchend", ()=>{}, {passive:true});
+</script>
+</body>
+</html>
